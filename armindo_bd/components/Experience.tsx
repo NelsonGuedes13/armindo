@@ -3,6 +3,7 @@
 import { LangProvider } from "./LangContext";
 import SmoothScroll from "./SmoothScroll";
 import Hud from "./Hud";
+import Backdrop from "./Backdrop";
 import TitleScreen from "./TitleScreen";
 import PanelScene from "./PanelScene";
 import EndScreen from "./EndScreen";
@@ -12,6 +13,7 @@ export default function Experience() {
   return (
     <LangProvider>
       <SmoothScroll />
+      <Backdrop />
       <Hud />
       <main>
         <TitleScreen />

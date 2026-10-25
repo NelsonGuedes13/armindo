@@ -9,7 +9,7 @@ export default function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9 });
+    const lenis = new Lenis({ lerp: 0.065, wheelMultiplier: 0.8, touchMultiplier: 1.2 });
     setLenis(lenis);
     lenis.on("scroll", ScrollTrigger.update);
 

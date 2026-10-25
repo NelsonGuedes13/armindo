@@ -16,108 +16,148 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
     () => {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const fromLeft = index % 2 === 0;
+      const vh = (n: number) => () => (window.innerHeight * n) / 100;
+      // Em mobile os balões ficam por baixo do quadro: menos amplitude para não se sobreporem.
+      const depth = () => (window.innerWidth < 760 ? 0.25 : 1);
 
+      // O palco é fixo: a cena vive enquanto a secção atravessa o ecrã (entrada → pausa → saída)
+      // e o quadro seguinte entra por cima enquanto este sai, sem ecrãs vazios entre eles.
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: root.current,
-          start: "top 65%",
-          end: "bottom bottom",
-          scrub: 0.7,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1.2,
+          invalidateOnRefresh: true,
+          toggleClass: { targets: root.current?.querySelector(".scene-stage") ?? [], className: "is-live" },
         },
       });
 
-      // Entrada do quadro: recorte que se abre + rotação até à inclinação final
-      tl.fromTo(
-        ".scene-frame",
-        {
-          clipPath: fromLeft ? "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)" : "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)",
-          rotate: panel.tilt * 4,
-          scale: 0.82,
-          xPercent: fromLeft ? -8 : 8,
-        },
-        {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-          rotate: panel.tilt,
-          scale: 1,
-          xPercent: 0,
-          duration: 0.2,
-          ease: "power3.out",
-        },
-        0,
-      )
-        .fromTo(".scene-shadow", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.05)
-        .fromTo(".scene-number", { yPercent: 40, opacity: 0 }, { yPercent: -40, opacity: 1, duration: 1 }, 0)
-        .fromTo(".scene-title", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.12, ease: "power2.out" }, 0.1)
+      // Parallax em camadas: [entrada, início da pausa, fim da pausa, saída] em vh.
+      // Quanto maior a amplitude, mais "perto" do leitor parece a camada.
+      const layer = (target: string, [a, b, c, d]: number[], factor: () => number = () => 1) => {
+        const v = (n: number) => () => vh(n)() * factor();
+        tl.fromTo(target, { y: v(a) }, { y: v(b), duration: 0.3 }, 0)
+          .to(target, { y: v(c), duration: 0.4 }, 0.3)
+          .to(target, { y: v(d), duration: 0.3 }, 0.7);
+      };
+      layer(".scene-number", [25, 5, -5, -25]);
+      layer(".scene-title", [50, 6, -6, -50]);
+      layer(".scene-frame-wrap", [45, 5, -5, -45]);
+      // balões e onomatopeias estão dentro do quadro: estes valores somam-se ao movimento dele
+      layer(".balloons", [22, 4, -4, -22], depth);
+      layer(".sfx-layer", [35, 8, -8, -35]);
 
-        // Movimento de câmara dentro do quadro (Ken Burns)
+      tl.fromTo(".scene-content", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.04)
+        .fromTo(".scene-number", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0)
+
+        // Entrada do quadro: recorte que se abre + rotação até à inclinação final
+        .fromTo(
+          ".scene-frame",
+          {
+            clipPath: fromLeft ? "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)" : "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)",
+            rotate: panel.tilt * 4,
+            scale: 0.88,
+            xPercent: fromLeft ? -6 : 6,
+          },
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            rotate: panel.tilt,
+            scale: 1,
+            xPercent: 0,
+            duration: 0.26,
+            ease: "power2.out",
+          },
+          0.04,
+        )
+        .fromTo(".scene-shadow", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.12)
+
+        // Câmara dentro do quadro: zoom + deslize + contra-parallax vertical
         .fromTo(
           ".scene-img",
-          { scale: panel.zoom[0], objectPosition: `${panel.pan[0]}% 50%` },
-          { scale: panel.zoom[1], objectPosition: `${panel.pan[1]}% 50%`, duration: 1 },
+          { scale: panel.zoom[0], objectPosition: `${panel.pan[0]}% 50%`, yPercent: -3 },
+          { scale: panel.zoom[1], objectPosition: `${panel.pan[1]}% 50%`, yPercent: 3, duration: 1 },
           0,
         );
 
+      // Os momentos do guião (0–1) são distribuídos pela pausa da cena
+      const beat = (at: number) => 0.24 + at * 0.6;
+
       if (panel.action) {
-        tl.fromTo(".speedlines", { opacity: 0, rotate: 0 }, { opacity: 0.55, rotate: 25, duration: 0.8 }, 0.1);
+        tl.fromTo(".speedlines", { opacity: 0, rotate: 0 }, { opacity: 0.55, rotate: 25, duration: 0.6 }, 0.15)
+          .fromTo(".scene-tint", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.1);
       }
 
-      // Balões entram em sequência
-      gsap.utils.toArray<HTMLElement>(".balloon", root.current).forEach((el, i) => {
-        const at = panel.balloons[i]?.at ?? 0.3;
-        tl.fromTo(
-          el,
-          { scale: 0, opacity: 0, rotate: i % 2 ? 8 : -8 },
-          { scale: 1, opacity: 1, rotate: 0, duration: 0.07, ease: "back.out(2.4)" },
+      // Balões e onomatopeias não são "arrastados" pelo scroll: ao passar o seu momento
+      // tocam a animação completa (e invertem-na ao voltar atrás), para nunca ficarem a meio.
+      const cue = (at: number, anim: gsap.core.Timeline) => {
+        tl.call(
+          () => {
+            if ((tl.scrollTrigger?.direction ?? 1) > 0) anim.play();
+            else anim.reverse();
+          },
+          undefined,
           at,
         );
+      };
+
+      // O quadro escurece ligeiramente quando chega o primeiro balão
+      const firstAt = beat(Math.min(...panel.balloons.map((b) => b.at)));
+      cue(firstAt, gsap.timeline({ paused: true }).fromTo(".scene-dim", { opacity: 0 }, { opacity: 1, duration: 0.5 }));
+
+      gsap.utils.toArray<HTMLElement>(".balloon", root.current).forEach((el, i) => {
+        const anim = gsap.timeline({ paused: true }).fromTo(
+          el,
+          { scale: 0.2, opacity: 0, y: 50, rotate: i % 2 ? 10 : -10 },
+          { scale: 1, opacity: 1, y: 0, rotate: 0, duration: 0.55, ease: "back.out(2.2)" },
+        );
+        cue(beat(panel.balloons[i]?.at ?? 0.3), anim);
       });
 
-      // Onomatopeias: cada carácter entra com impacto, depois flash e tremor do quadro
+      // Onomatopeias: cada letra entra com impacto; nos golpes há flash e tremor do quadro
       gsap.utils.toArray<HTMLElement>(".sfx", root.current).forEach((el, i) => {
         const sfx = panel.sfx?.[i];
         if (!sfx) return;
         const chars = el.querySelectorAll(".sfx-char");
-        const romaji = el.querySelector(".sfx-romaji");
-
-        tl.set(el, { opacity: 1 }, sfx.at);
+        const anim = gsap.timeline({ paused: true }).set(el, { opacity: 1 });
 
         if (sfx.style === "impact") {
-          tl.fromTo(
-            chars,
-            { scale: 3, opacity: 0, y: -30 },
-            { scale: 1, opacity: 1, y: 0, duration: 0.05, stagger: 0.015, ease: "back.out(2.5)" },
-            sfx.at,
-          ).fromTo(".scene-flash", { opacity: 0.85 }, { opacity: 0, duration: 0.08, immediateRender: false }, sfx.at + 0.03);
+          anim
+            .fromTo(
+              chars,
+              { scale: 3, opacity: 0, y: -30 },
+              { scale: 1, opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "back.out(2.5)" },
+            )
+            .fromTo(".scene-flash", { opacity: 0.85 }, { opacity: 0, duration: 0.45, immediateRender: false }, 0.12);
 
           if (!reduced) {
-            tl.to(
+            anim.to(
               ".scene-frame",
-              { keyframes: { x: [0, -14, 12, -8, 6, 0], y: [0, 6, -8, 4, -2, 0] }, duration: 0.08 },
-              sfx.at + 0.03,
+              { keyframes: { x: [0, -14, 12, -8, 6, 0], y: [0, 6, -8, 4, -2, 0] }, duration: 0.4 },
+              0.12,
             );
           }
         } else if (sfx.style === "motion") {
-          tl.fromTo(
+          anim.fromTo(
             chars,
             { xPercent: -160, skewX: -35, opacity: 0 },
-            { xPercent: 0, skewX: 0, opacity: 1, duration: 0.07, stagger: 0.012, ease: "power4.out" },
-            sfx.at,
+            { xPercent: 0, skewX: 0, opacity: 1, duration: 0.45, stagger: 0.04, ease: "power4.out" },
           );
         } else {
-          tl.fromTo(
+          anim.fromTo(
             chars,
-            { scale: 0.4, opacity: 0, filter: "blur(6px)" },
-            { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.08, stagger: 0.02, ease: "power2.out" },
-            sfx.at,
+            { scale: 0.4, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.5, stagger: 0.07, ease: "power2.out" },
           );
         }
-
-        tl.fromTo(romaji, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.05 }, sfx.at + 0.06);
+        cue(beat(sfx.at), anim);
       });
 
-      // Saída: tudo recua para dar lugar ao próximo quadro
-      tl.to(".scene-content", { opacity: 0, scale: 0.9, y: -60, duration: 0.12, ease: "power2.in" }, 0.88);
+      // Saída suave: o conteúdo sobe e desvanece enquanto o próximo quadro já está a entrar
+      tl.to(".scene-content", { opacity: 0, scale: 0.95, duration: 0.2, ease: "power1.in" }, 0.76)
+        .to(".scene-number", { opacity: 0, duration: 0.2 }, 0.78);
+      if (panel.action) tl.to(".scene-tint, .speedlines", { opacity: 0, duration: 0.2 }, 0.76);
     },
     { scope: root },
   );
@@ -130,6 +170,7 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
       aria-label={`${panel.id}. ${t(panel.title)}`}
     >
       <div className="scene-stage">
+        {panel.action && <div className="scene-tint" />}
         <div className="speedlines" />
         <span className="scene-number" aria-hidden="true">
           {String(panel.id).padStart(2, "0")}
@@ -145,12 +186,15 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
             <div className="scene-frame">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="scene-img" src={asset(panel.src)} alt={t(panel.title)} loading="lazy" draggable={false} />
+              <div className="scene-dim" />
               <div className="scene-flash" />
             </div>
 
-            {panel.sfx?.map((sfx) => (
-              <Sfx key={sfx.text} sfx={sfx} />
-            ))}
+            <div className="sfx-layer">
+              {panel.sfx?.map((sfx) => (
+                <Sfx key={sfx.text} sfx={sfx} />
+              ))}
+            </div>
 
             <div className="balloons">
               {panel.balloons.map((balloon, i) => (

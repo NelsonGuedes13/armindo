@@ -21,15 +21,11 @@ export interface Balloon {
 
 export type SfxStyle = "impact" | "menace" | "motion";
 
-/** Onomatopeia ao estilo manga: katakana + leitura em romaji + tradução. */
+/** Onomatopeia: as letras entram uma a uma com o estilo escolhido. */
 export interface Sfx {
-  /** katakana, ex.: ガキィン */
   text: string;
-  romaji: string;
-  meaning: Text;
-  /** impact = golpe seco; menace = tensão (ゴゴゴ); motion = movimento rápido */
+  /** impact = golpe seco; menace = tensão a tremer; motion = movimento rápido */
   style: SfxStyle;
-  vertical?: boolean;
   x: number;
   y: number;
   rotate: number;
@@ -101,10 +97,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ゴゴゴゴ", romaji: "GO GO GO GO", meaning: { pt: "tensão", en: "menace" },
-        style: "menace", vertical: true, x: 41, y: -8, rotate: 4, size: 0.9, at: 0.08,
-      },
+      { text: "RUMBLE", style: "menace", x: 40, y: -14, rotate: -4, size: 0.75, at: 0.08 },
     ],
   },
   {
@@ -131,10 +124,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ギロッ", romaji: "GIRO!", meaning: { pt: "olhar fulminante", en: "glare" },
-        style: "impact", x: 76, y: 6, rotate: -8, size: 0.75, at: 0.12,
-      },
+      { text: "GLARE!", style: "impact", x: 72, y: 4, rotate: -8, size: 0.7, at: 0.12 },
     ],
   },
   {
@@ -156,10 +146,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ゴゴゴ", romaji: "GO GO GO", meaning: { pt: "tensão", en: "menace" },
-        style: "menace", x: 2, y: 12, rotate: -4, size: 0.7, at: 0.1,
-      },
+      { text: "RUMBLE", style: "menace", x: 2, y: 8, rotate: -4, size: 0.6, at: 0.1 },
     ],
   },
   {
@@ -179,14 +166,8 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "シュルルッ", romaji: "SHURURU!", meaning: { pt: "linha a chicotear", en: "thread whipping" },
-        style: "motion", x: 2, y: 58, rotate: -12, size: 0.85, at: 0.4,
-      },
-      {
-        text: "ズバッ", romaji: "ZUBA!", meaning: { pt: "golpe cortante", en: "slash" },
-        style: "impact", x: 68, y: 46, rotate: 10, size: 1, at: 0.55,
-      },
+      { text: "WHIP!", style: "motion", x: 2, y: 58, rotate: -12, size: 0.9, at: 0.4 },
+      { text: "SLASH!", style: "impact", x: 62, y: 44, rotate: 10, size: 1, at: 0.55 },
     ],
   },
   {
@@ -209,10 +190,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ブォン", romaji: "BUON!", meaning: { pt: "forquilha a cortar o ar", en: "pitchfork swing" },
-        style: "motion", x: 2, y: 6, rotate: 8, size: 1, at: 0.42,
-      },
+      { text: "WHOOSH!", style: "motion", x: 2, y: 6, rotate: 8, size: 1, at: 0.42 },
     ],
   },
   {
@@ -235,14 +213,8 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ガキィン", romaji: "GAKIIN!!", meaning: { pt: "choque de metal", en: "metal clash" },
-        style: "impact", x: 18, y: 18, rotate: -8, size: 1.3, at: 0.25,
-      },
-      {
-        text: "ドンッ", romaji: "DON!", meaning: { pt: "impacto", en: "impact" },
-        style: "impact", vertical: true, x: 84, y: -4, rotate: 6, size: 0.8, at: 0.35,
-      },
+      { text: "CLANG!!", style: "impact", x: 18, y: 18, rotate: -8, size: 1.3, at: 0.25 },
+      { text: "BOOM!", style: "impact", x: 70, y: -8, rotate: 8, size: 0.8, at: 0.35 },
     ],
   },
   {
@@ -266,10 +238,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ギリッ", romaji: "GIRI…", meaning: { pt: "punho a apertar", en: "grip tightening" },
-        style: "menace", vertical: true, x: 4, y: 20, rotate: -4, size: 0.8, at: 0.3,
-      },
+      { text: "GRIP…", style: "menace", x: 4, y: 30, rotate: -6, size: 0.75, at: 0.3 },
     ],
   },
   {
@@ -296,10 +265,7 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "グッ", romaji: "GU!", meaning: { pt: "mão a fechar", en: "clench" },
-        style: "impact", x: 6, y: 50, rotate: -6, size: 0.9, at: 0.55,
-      },
+      { text: "CLENCH!", style: "impact", x: 4, y: 50, rotate: -6, size: 0.85, at: 0.55 },
     ],
   },
   {
@@ -326,14 +292,8 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      {
-        text: "ヒュウウ", romaji: "HYUUU…", meaning: { pt: "vento", en: "wind" },
-        style: "motion", x: 4, y: 40, rotate: -6, size: 0.7, at: 0.3,
-      },
-      {
-        text: "ドドドド", romaji: "DO DO DO DO", meaning: { pt: "presença ameaçadora", en: "looming presence" },
-        style: "menace", vertical: true, x: 82, y: -6, rotate: 3, size: 0.9, at: 0.4,
-      },
+      { text: "FWOOO…", style: "motion", x: 4, y: 40, rotate: -6, size: 0.7, at: 0.3 },
+      { text: "DOOM", style: "menace", x: 70, y: -8, rotate: 4, size: 0.9, at: 0.4 },
     ],
   },
 ];

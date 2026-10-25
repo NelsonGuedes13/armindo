@@ -6,7 +6,7 @@ Feita com Next.js (React) + GSAP ScrollTrigger + Lenis, em português e inglês.
 ## Experiência
 
 1. **Ecrã de título** — o título entra animado e a linha vermelha desenha-se.
-2. **Quadro a quadro** — cada quadro tem a sua cena: abre com um recorte, a câmara desliza sobre a imagem (Ken Burns) e os balões surgem em sequência. As onomatopeias seguem o estilo manga: katakana (ゴゴゴ, ガキィン, ズバッ…) com a leitura em romaji e a tradução; os impactos trazem flash e tremor.
+2. **Quadro a quadro** — cada quadro tem a sua cena: abre com um recorte, a câmara desliza sobre a imagem (Ken Burns) e os balões surgem em sequência. O quadro, os balões e as onomatopeias movem-se em camadas a velocidades diferentes (parallax) e cada quadro funde-se suavemente com o seguinte; os impactos (CLANG!!, SLASH!…) trazem flash e tremor.
 3. **Ecrã final** — "FIM" e a página completa.
 
 A interface inclui uma barra de progresso (a linha vermelha), um seletor PT/EN e navegação rápida entre quadros.

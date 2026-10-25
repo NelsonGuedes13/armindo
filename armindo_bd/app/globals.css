@@ -210,6 +210,7 @@ button {
 
 .title-screen {
   position: relative;
+  background: var(--ink);
   height: 100vh;
   height: 100svh;
   display: grid;
@@ -322,28 +323,84 @@ button {
 
 /* ---------- Cenas (quadros) ---------- */
 
-.scene {
-  position: relative;
-  height: 280vh;
+/* Fundo fixo com camadas de poeira em parallax */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.scene-stage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
+.backdrop-glow {
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(ellipse at 50% 40%, rgba(201, 162, 107, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 40%, rgba(201, 162, 107, 0.14) 0%, transparent 60%),
     radial-gradient(ellipse at center, #241a12 0%, var(--ink) 80%);
 }
 
-.scene--action .scene-stage {
-  background:
-    radial-gradient(ellipse at 50% 45%, rgba(200, 16, 46, 0.22) 0%, transparent 55%),
-    radial-gradient(ellipse at center, #2a1611 0%, var(--ink) 80%);
+.backdrop-dust {
+  position: absolute;
+  inset: 0;
+  will-change: background-position;
+}
+
+.backdrop-dust--far {
+  background-image:
+    radial-gradient(circle, rgba(239, 228, 207, 0.22) 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(201, 162, 107, 0.18) 1px, transparent 1.5px);
+  background-size: 140px 140px, 230px 230px;
+  background-position: 0 0, 70px 110px;
+}
+
+.backdrop-dust--mid {
+  background-image:
+    radial-gradient(circle, rgba(239, 228, 207, 0.2) 2px, transparent 2.5px),
+    radial-gradient(circle, rgba(200, 16, 46, 0.25) 1.5px, transparent 2px);
+  background-size: 320px 320px, 410px 410px;
+  background-position: 40px 0, 200px 160px;
+}
+
+.backdrop-dust--near {
+  background-image:
+    radial-gradient(circle, rgba(239, 228, 207, 0.14) 4px, transparent 6px),
+    radial-gradient(circle, rgba(201, 162, 107, 0.12) 3px, transparent 5px);
+  background-size: 620px 620px, 780px 780px;
+  background-position: 120px 0, 460px 300px;
+  filter: blur(1.5px);
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Cada secção é só "espaço de scroll"; o palco é fixo e só fica visível enquanto a secção atravessa o ecrã */
+.scene {
+  position: relative;
+  height: 220vh;
+}
+
+.scene-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.scene-stage.is-live {
+  visibility: visible;
+}
+
+.scene-tint {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(200, 16, 46, 0.28) 0%, transparent 60%);
+  opacity: 0;
 }
 
 .scene-number {
@@ -410,6 +467,14 @@ button {
   will-change: transform;
 }
 
+.scene-dim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 8, 6, 0.15), rgba(10, 8, 6, 0.45));
+  opacity: 0;
+  pointer-events: none;
+}
+
 .scene-flash {
   position: absolute;
   inset: 0;
@@ -421,37 +486,29 @@ button {
 
 /* ---------- Onomatopeias (estilo manga) ---------- */
 
+.sfx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
 .sfx {
   --font-sfx: "Dela Gothic One", var(--font-display);
   position: absolute;
   left: var(--x);
   top: var(--y);
-  z-index: 3;
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
+  font-family: var(--font-sfx);
+  font-size: calc(clamp(2.4rem, 5.6vw, 5rem) * var(--s));
+  line-height: 0.95;
+  white-space: nowrap;
   rotate: var(--r);
-  pointer-events: none;
   opacity: 0;
 }
 
-.sfx--vertical {
-  align-items: flex-start;
-}
 
-.sfx-text {
-  display: flex;
-  font-family: var(--font-sfx);
-  font-size: calc(clamp(2.6rem, 6.4vw, 5.6rem) * var(--s));
-  line-height: 0.95;
-  white-space: nowrap;
-}
 
-.sfx--vertical .sfx-text {
-  flex-direction: column;
-  align-items: center;
-  line-height: 0.88;
-}
 
 .sfx-char {
   display: inline-block;
@@ -471,7 +528,7 @@ button {
   filter: drop-shadow(5px 6px 0 var(--red));
 }
 
-/* Tensão (ゴゴゴ): púrpura escuro, brilho difuso e tremor contínuo */
+/* Tensão: púrpura escuro, brilho difuso e tremor contínuo */
 .sfx--menace .sfx-char i {
   color: #2a1236;
   -webkit-text-stroke: 0.1em #f3e9ff;
@@ -481,7 +538,7 @@ button {
 }
 
 /* Movimento: branco inclinado com rasto */
-.sfx--motion .sfx-text {
+.sfx--motion {
   font-style: italic;
   transform: skewX(-14deg);
 }
@@ -506,31 +563,8 @@ button {
   }
 }
 
-.sfx-romaji {
-  display: flex;
-  flex-direction: column;
-  padding: 3px 8px;
-  background: var(--ink);
-  border: 2px solid var(--paper);
-  color: var(--paper-bright);
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  line-height: 1.1;
-  white-space: nowrap;
-  rotate: calc(var(--r) * -1);
-}
 
-.sfx--vertical .sfx-romaji {
-  align-self: flex-end;
-}
 
-.sfx-romaji small {
-  font-family: var(--font-comic);
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
-  opacity: 0.8;
-}
 
 /* ---------- Balões ---------- */
 
@@ -545,19 +579,23 @@ button {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  max-width: min(320px, 40%);
-  min-width: 160px;
-  padding: 12px 16px;
+  max-width: min(400px, 46%);
+  min-width: 200px;
+  padding: 16px 22px;
   background: var(--paper-bright);
   color: var(--ink);
-  border: 3px solid var(--ink);
-  border-radius: 28px;
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+  border: 4px solid var(--ink);
+  border-radius: 32px;
+  box-shadow:
+    0 0 0 3px var(--paper-bright),
+    8px 10px 0 rgba(0, 0, 0, 0.75),
+    0 18px 40px rgba(0, 0, 0, 0.55);
   font-family: var(--font-comic);
   font-weight: 700;
-  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
-  line-height: 1.25;
+  font-size: clamp(1rem, 1.55vw, 1.3rem);
+  line-height: 1.28;
   opacity: 0;
+  will-change: transform;
 }
 
 .balloon p {
@@ -565,20 +603,24 @@ button {
 }
 
 .balloon-speaker {
-  display: block;
+  display: inline-block;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   letter-spacing: 0.12em;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  padding: 1px 8px;
+  color: var(--paper-bright) !important;
+  background: var(--ink);
+  border-radius: 4px;
 }
 
 .speaker--alfaiate .balloon-speaker {
-  color: var(--red);
+  background: var(--red);
 }
 
 .speaker--agricultor .balloon-speaker {
-  color: #4f6b2a;
+  background: #4f6b2a;
 }
 
 /* rabichos: triângulo preto (::before) com miolo claro (::after) */
@@ -602,53 +644,53 @@ button {
 
 .tail--bottom-left::before {
   left: 26px;
-  bottom: -24px;
-  border-width: 24px 20px 0 0;
+  bottom: -30px;
+  border-width: 30px 24px 0 0;
   border-color: var(--ink) transparent transparent transparent;
 }
 .tail--bottom-left::after {
   left: 30px;
-  bottom: -16px;
-  border-width: 17px 13px 0 0;
+  bottom: -21px;
+  border-width: 22px 16px 0 0;
   border-color: var(--paper-bright) transparent transparent transparent;
 }
 
 .tail--bottom-right::before {
   right: 26px;
-  bottom: -24px;
-  border-width: 24px 0 0 20px;
+  bottom: -30px;
+  border-width: 30px 0 0 24px;
   border-color: var(--ink) transparent transparent transparent;
 }
 .tail--bottom-right::after {
   right: 30px;
-  bottom: -16px;
-  border-width: 17px 0 0 13px;
+  bottom: -21px;
+  border-width: 22px 0 0 16px;
   border-color: var(--paper-bright) transparent transparent transparent;
 }
 
 .tail--top-left::before {
   left: 26px;
-  top: -24px;
-  border-width: 0 20px 24px 0;
+  top: -30px;
+  border-width: 0 24px 30px 0;
   border-color: transparent transparent var(--ink) transparent;
 }
 .tail--top-left::after {
   left: 30px;
-  top: -16px;
-  border-width: 0 13px 17px 0;
+  top: -21px;
+  border-width: 0 16px 22px 0;
   border-color: transparent transparent var(--paper-bright) transparent;
 }
 
 .tail--top-right::before {
   right: 26px;
-  top: -24px;
-  border-width: 0 0 24px 20px;
+  top: -30px;
+  border-width: 0 0 30px 24px;
   border-color: transparent transparent var(--ink) transparent;
 }
 .tail--top-right::after {
   right: 30px;
-  top: -16px;
-  border-width: 0 0 17px 13px;
+  top: -21px;
+  border-width: 0 0 22px 16px;
   border-color: transparent transparent var(--paper-bright) transparent;
 }
 
@@ -656,10 +698,13 @@ button {
   border-width: 4px;
   border-radius: 6px;
   background: #fff7d1;
-  box-shadow: 6px 6px 0 var(--red);
+  box-shadow:
+    0 0 0 3px var(--paper-bright),
+    9px 9px 0 var(--red),
+    0 18px 40px rgba(0, 0, 0, 0.55);
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.05rem, 1.9vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.85rem);
   letter-spacing: 0.04em;
   line-height: 1.1;
 }
@@ -705,9 +750,9 @@ button {
   box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.6);
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  font-size: clamp(1.05rem, 1.7vw, 1.4rem);
   letter-spacing: 0.06em;
-  min-width: 200px;
+  min-width: 220px;
 }
 
 /* ---------- Ecrã final ---------- */
@@ -799,20 +844,9 @@ button {
   }
 
   .sfx {
-    left: min(var(--x), 62%);
-    top: clamp(2%, var(--y), 60%);
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .sfx-text {
-    font-size: calc(2.2rem * var(--s));
-  }
-
-  .sfx-romaji {
-    font-size: 0.75rem;
-    align-self: flex-start !important;
+    left: min(var(--x), 55%);
+    top: clamp(2%, var(--y), 70%);
+    font-size: calc(1.9rem * var(--s));
   }
 
   .balloons {
@@ -831,7 +865,7 @@ button {
     top: auto;
     max-width: 100%;
     min-width: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .balloon::before,
