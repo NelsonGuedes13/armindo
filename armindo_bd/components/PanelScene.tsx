@@ -5,6 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import type { Panel } from "@/data/story";
 import { asset } from "@/lib/asset";
 import Balloon from "./Balloon";
+import Sfx from "./Sfx";
 import { useLang } from "./LangContext";
 
 export default function PanelScene({ panel, index }: { panel: Panel; index: number }) {
@@ -72,28 +73,47 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
         );
       });
 
-      // Onomatopeias: explosão + flash + tremor do quadro
+      // Onomatopeias: cada carácter entra com impacto, depois flash e tremor do quadro
       gsap.utils.toArray<HTMLElement>(".sfx", root.current).forEach((el, i) => {
         const sfx = panel.sfx?.[i];
         if (!sfx) return;
-        tl.fromTo(
-          el,
-          { scale: 0, opacity: 0, rotate: sfx.rotate - 30 },
-          { scale: 1, opacity: 1, rotate: sfx.rotate, duration: 0.08, ease: "back.out(3)" },
-          sfx.at,
-        ).fromTo(".scene-flash", { opacity: 0.85 }, { opacity: 0, duration: 0.08, immediateRender: false }, sfx.at);
+        const chars = el.querySelectorAll(".sfx-char");
+        const romaji = el.querySelector(".sfx-romaji");
 
-        if (!reduced) {
-          tl.to(
-            ".scene-frame",
-            {
-              keyframes: { x: [0, -14, 12, -8, 6, 0], y: [0, 6, -8, 4, -2, 0] },
-              duration: 0.08,
-              ease: "none",
-            },
+        tl.set(el, { opacity: 1 }, sfx.at);
+
+        if (sfx.style === "impact") {
+          tl.fromTo(
+            chars,
+            { scale: 3, opacity: 0, y: -30 },
+            { scale: 1, opacity: 1, y: 0, duration: 0.05, stagger: 0.015, ease: "back.out(2.5)" },
+            sfx.at,
+          ).fromTo(".scene-flash", { opacity: 0.85 }, { opacity: 0, duration: 0.08, immediateRender: false }, sfx.at + 0.03);
+
+          if (!reduced) {
+            tl.to(
+              ".scene-frame",
+              { keyframes: { x: [0, -14, 12, -8, 6, 0], y: [0, 6, -8, 4, -2, 0] }, duration: 0.08 },
+              sfx.at + 0.03,
+            );
+          }
+        } else if (sfx.style === "motion") {
+          tl.fromTo(
+            chars,
+            { xPercent: -160, skewX: -35, opacity: 0 },
+            { xPercent: 0, skewX: 0, opacity: 1, duration: 0.07, stagger: 0.012, ease: "power4.out" },
+            sfx.at,
+          );
+        } else {
+          tl.fromTo(
+            chars,
+            { scale: 0.4, opacity: 0, filter: "blur(6px)" },
+            { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.08, stagger: 0.02, ease: "power2.out" },
             sfx.at,
           );
         }
+
+        tl.fromTo(romaji, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.05 }, sfx.at + 0.06);
       });
 
       // Saída: tudo recua para dar lugar ao próximo quadro
@@ -129,21 +149,7 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
             </div>
 
             {panel.sfx?.map((sfx) => (
-              <span
-                key={sfx.text}
-                className="sfx"
-                data-text={sfx.text}
-                style={
-                  {
-                    "--x": `${sfx.x}%`,
-                    "--y": `${sfx.y}%`,
-                    "--c": sfx.color,
-                    "--s": sfx.size ?? 1,
-                  } as React.CSSProperties
-                }
-              >
-                {sfx.text}
-              </span>
+              <Sfx key={sfx.text} sfx={sfx} />
             ))}
 
             <div className="balloons">

@@ -19,12 +19,20 @@ export interface Balloon {
   at: number;
 }
 
+export type SfxStyle = "impact" | "menace" | "motion";
+
+/** Onomatopeia ao estilo manga: katakana + leitura em romaji + tradução. */
 export interface Sfx {
+  /** katakana, ex.: ガキィン */
   text: string;
+  romaji: string;
+  meaning: Text;
+  /** impact = golpe seco; menace = tensão (ゴゴゴ); motion = movimento rápido */
+  style: SfxStyle;
+  vertical?: boolean;
   x: number;
   y: number;
   rotate: number;
-  color: string;
   size?: number;
   at: number;
 }
@@ -34,8 +42,6 @@ export interface Panel {
   src: string;
   /** proporção largura/altura do recorte */
   ratio: number;
-  /** caixa do quadro na página original (px, imagem 1536×1024) */
-  box: [number, number, number, number];
   title: Text;
   /** posição horizontal da imagem (object-position %) no início e fim — usado sobretudo em mobile */
   pan: [number, number];
@@ -53,8 +59,6 @@ export const STORY = {
   subtitle: { pt: "O Alfaiate contra o Agricultor", en: "The Tailor versus the Farmer" } as Text,
   chapter: { pt: "Capítulo I", en: "Chapter I" } as Text,
   scrollHint: { pt: "Faz scroll para começar", en: "Scroll to begin" } as Text,
-  overviewIntro: { pt: "Uma página. Nove quadros. Um duelo.", en: "One page. Nine panels. One duel." } as Text,
-  overviewOutro: { pt: "Agora… quadro a quadro.", en: "Now… panel by panel." } as Text,
   end: { pt: "Fim", en: "The End" } as Text,
   endSub: { pt: "…ou apenas o primeiro ponto da costura?", en: "…or just the first stitch?" } as Text,
   restart: { pt: "Voltar ao início", en: "Back to the start" } as Text,
@@ -69,7 +73,6 @@ export const PANELS: Panel[] = [
     id: 1,
     src: "/panels/painel-1.jpg",
     ratio: 4.47,
-    box: [0, 0, 1536, 352],
     title: { pt: "O Desafio", en: "The Challenge" },
     pan: [0, 100],
     zoom: [1.35, 1.05],
@@ -97,12 +100,17 @@ export const PANELS: Panel[] = [
         x: 60, y: 66, at: 0.5,
       },
     ],
+    sfx: [
+      {
+        text: "ゴゴゴゴ", romaji: "GO GO GO GO", meaning: { pt: "tensão", en: "menace" },
+        style: "menace", vertical: true, x: 41, y: -8, rotate: 4, size: 0.9, at: 0.08,
+      },
+    ],
   },
   {
     id: 2,
     src: "/panels/painel-2.jpg",
     ratio: 5.85,
-    box: [0, 358, 770, 500],
     title: { pt: "O Olho de Botão", en: "The Button Eye" },
     pan: [25, 60],
     zoom: [1.5, 1.1],
@@ -122,12 +130,17 @@ export const PANELS: Panel[] = [
         x: 6, y: 92, at: 0.5,
       },
     ],
+    sfx: [
+      {
+        text: "ギロッ", romaji: "GIRO!", meaning: { pt: "olhar fulminante", en: "glare" },
+        style: "impact", x: 76, y: 6, rotate: -8, size: 0.75, at: 0.12,
+      },
+    ],
   },
   {
     id: 3,
     src: "/panels/painel-3.jpg",
     ratio: 5.41,
-    box: [785, 356, 1536, 505],
     title: { pt: "Olhos de Terra", en: "Eyes of Soil" },
     pan: [70, 45],
     zoom: [1.5, 1.1],
@@ -142,12 +155,17 @@ export const PANELS: Panel[] = [
         x: 48, y: -40, at: 0.3,
       },
     ],
+    sfx: [
+      {
+        text: "ゴゴゴ", romaji: "GO GO GO", meaning: { pt: "tensão", en: "menace" },
+        style: "menace", x: 2, y: 12, rotate: -4, size: 0.7, at: 0.1,
+      },
+    ],
   },
   {
     id: 4,
     src: "/panels/painel-4.jpg",
     ratio: 2.61,
-    box: [0, 512, 600, 750],
     title: { pt: "Ponto Cruz", en: "Cross-Stitch" },
     pan: [20, 70],
     zoom: [1.3, 1.05],
@@ -160,13 +178,21 @@ export const PANELS: Panel[] = [
         x: 52, y: -14, at: 0.2,
       },
     ],
-    sfx: [{ text: "ZIIING!", x: 4, y: 55, rotate: -14, color: "#e3262f", size: 1.1, at: 0.45 }],
+    sfx: [
+      {
+        text: "シュルルッ", romaji: "SHURURU!", meaning: { pt: "linha a chicotear", en: "thread whipping" },
+        style: "motion", x: 2, y: 58, rotate: -12, size: 0.85, at: 0.4,
+      },
+      {
+        text: "ズバッ", romaji: "ZUBA!", meaning: { pt: "golpe cortante", en: "slash" },
+        style: "impact", x: 68, y: 46, rotate: 10, size: 1, at: 0.55,
+      },
+    ],
   },
   {
     id: 5,
     src: "/panels/painel-5.jpg",
     ratio: 2.01,
-    box: [605, 515, 1065, 750],
     title: { pt: "Três Dentes de Aço", en: "Three Steel Teeth" },
     pan: [30, 70],
     zoom: [1.3, 1.05],
@@ -182,13 +208,17 @@ export const PANELS: Panel[] = [
         x: 48, y: -12, at: 0.2,
       },
     ],
-    sfx: [{ text: "SWOOSH!", x: 2, y: 8, rotate: 10, color: "#f5c518", size: 1, at: 0.42 }],
+    sfx: [
+      {
+        text: "ブォン", romaji: "BUON!", meaning: { pt: "forquilha a cortar o ar", en: "pitchfork swing" },
+        style: "motion", x: 2, y: 6, rotate: 8, size: 1, at: 0.42,
+      },
+    ],
   },
   {
     id: 6,
     src: "/panels/painel-6.jpg",
     ratio: 1.84,
-    box: [1070, 515, 1536, 775],
     title: { pt: "O Choque", en: "The Clash" },
     pan: [40, 65],
     zoom: [1.4, 1.05],
@@ -205,15 +235,20 @@ export const PANELS: Panel[] = [
       },
     ],
     sfx: [
-      { text: "CLANG!!", x: 30, y: 20, rotate: -8, color: "#ffffff", size: 1.4, at: 0.25 },
-      { text: "KRAK!", x: 70, y: 2, rotate: 12, color: "#f5c518", size: 0.8, at: 0.35 },
+      {
+        text: "ガキィン", romaji: "GAKIIN!!", meaning: { pt: "choque de metal", en: "metal clash" },
+        style: "impact", x: 18, y: 18, rotate: -8, size: 1.3, at: 0.25,
+      },
+      {
+        text: "ドンッ", romaji: "DON!", meaning: { pt: "impacto", en: "impact" },
+        style: "impact", vertical: true, x: 84, y: -4, rotate: 6, size: 0.8, at: 0.35,
+      },
     ],
   },
   {
     id: 7,
     src: "/panels/painel-7.jpg",
     ratio: 1.35,
-    box: [0, 758, 355, 1024],
     title: { pt: "A Agulha Não Treme", en: "The Needle Does Not Waver" },
     pan: [50, 50],
     zoom: [1.4, 1.1],
@@ -230,12 +265,17 @@ export const PANELS: Panel[] = [
         x: 62, y: 72, at: 0.4,
       },
     ],
+    sfx: [
+      {
+        text: "ギリッ", romaji: "GIRI…", meaning: { pt: "punho a apertar", en: "grip tightening" },
+        style: "menace", vertical: true, x: 4, y: 20, rotate: -4, size: 0.8, at: 0.3,
+      },
+    ],
   },
   {
     id: 8,
     src: "/panels/painel-8.jpg",
     ratio: 1.98,
-    box: [362, 760, 878, 1024],
     title: { pt: "A Terra Também Não", en: "Nor Does the Soil" },
     pan: [35, 65],
     zoom: [1.35, 1.05],
@@ -255,13 +295,17 @@ export const PANELS: Panel[] = [
         x: 56, y: 76, at: 0.4,
       },
     ],
-    sfx: [{ text: "CRRK…", x: 6, y: 62, rotate: -6, color: "#c9a26b", size: 0.7, at: 0.55 }],
+    sfx: [
+      {
+        text: "グッ", romaji: "GU!", meaning: { pt: "mão a fechar", en: "clench" },
+        style: "impact", x: 6, y: 50, rotate: -6, size: 0.9, at: 0.55,
+      },
+    ],
   },
   {
     id: 9,
     src: "/panels/painel-9.jpg",
     ratio: 2.68,
-    box: [885, 775, 1536, 1024],
     title: { pt: "Quando a Poeira Assentou", en: "When the Dust Settled" },
     pan: [20, 55],
     zoom: [1.6, 1.05],
@@ -279,6 +323,16 @@ export const PANELS: Panel[] = [
         kind: "speech", speaker: "alfaiate", tail: "top-left",
         text: { pt: "A costura… ainda não acabou.", en: "The stitching… isn't finished yet." },
         x: 50, y: 88, at: 0.5,
+      },
+    ],
+    sfx: [
+      {
+        text: "ヒュウウ", romaji: "HYUUU…", meaning: { pt: "vento", en: "wind" },
+        style: "motion", x: 4, y: 40, rotate: -6, size: 0.7, at: 0.3,
+      },
+      {
+        text: "ドドドド", romaji: "DO DO DO DO", meaning: { pt: "presença ameaçadora", en: "looming presence" },
+        style: "menace", vertical: true, x: 82, y: -6, rotate: 3, size: 0.9, at: 0.4,
       },
     ],
   },

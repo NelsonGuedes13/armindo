@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource/bangers/400.css";
 import "@fontsource/comic-neue/400.css";
 import "@fontsource/comic-neue/700.css";
+import "@fontsource/dela-gothic-one/400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
