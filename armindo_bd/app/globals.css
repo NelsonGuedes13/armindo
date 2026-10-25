@@ -845,7 +845,7 @@ main {
 
   .sfx {
     left: min(var(--x), 55%);
-    top: clamp(2%, var(--y), 70%);
+    top: clamp(6%, var(--y), 70%);
     font-size: calc(1.9rem * var(--s));
   }
 

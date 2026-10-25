@@ -47,7 +47,7 @@ export default function PanelScene({ panel, index }: { panel: Panel; index: numb
       layer(".scene-frame-wrap", [45, 5, -5, -45]);
       // balões e onomatopeias estão dentro do quadro: estes valores somam-se ao movimento dele
       layer(".balloons", [22, 4, -4, -22], depth);
-      layer(".sfx-layer", [35, 8, -8, -35]);
+      layer(".sfx-layer", [35, 8, -8, -35], depth);
 
       tl.fromTo(".scene-content", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.04)
         .fromTo(".scene-number", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0)
